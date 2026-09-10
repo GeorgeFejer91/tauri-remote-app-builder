@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tauri Remote App Builder"
+  short_description: "Build Tauri apps with full browser-control parity"
+  default_prompt: "Use $tauri-remote-app-builder to build a polished Rust/Tauri app whose paired browser and CLI can operate the complete typed product surface."

@@ -1,0 +1,13 @@
+{
+  "type": "example.transfer.begin.v1",
+  "transferId": "transfer_demo_01",
+  "digestAlgorithm": "sha-256",
+  "files": [
+    {
+      "fileId": "file_demo_01",
+      "relativeDisplayPath": "selection/example.bin",
+      "size": 4,
+      "mediaType": "application/octet-stream"
+    }
+  ]
+}

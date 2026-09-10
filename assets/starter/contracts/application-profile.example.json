@@ -1,0 +1,168 @@
+{
+  "protocol": "example.remote",
+  "version": 1,
+  "authority": {
+    "owner": "rust",
+    "revision": "monotonic-per-authority-generation",
+    "commandDedupe": "generation-principal-command-id-plus-fingerprint"
+  },
+  "adapters": {
+    "tauri": "typed-product-ipc",
+    "localCli": "authenticated-local-ipc-same-authority",
+    "remoteCli": "same-public-protocol-as-browser",
+    "browserCompanion": "static-untrusted-client"
+  },
+  "remoteControl": {
+    "policy": "full-semantic-parity",
+    "inventorySource": "rust-domain-registry",
+    "productOperationInventoryComplete": true,
+    "localOnlyExceptions": []
+  },
+  "availability": "manual-session",
+  "roles": ["observer", "controller", "uploader"],
+  "scopes": ["example.read", "example.control", "example.upload"],
+  "schemas": {
+    "empty-v1": "wire-envelope.schema.json#/$defs/emptyObject",
+    "set-level-v1": "wire-envelope.schema.json#/$defs/setLevelAction",
+    "product-state-v1": "wire-envelope.schema.json#/$defs/productState",
+    "product-state-event-v1": "wire-envelope.schema.json#/$defs/productState",
+    "transfer-manifest-v1": "transfer-manifest.schema.json",
+    "content-object-v1": "wire-envelope.schema.json#/$defs/contentObject"
+  },
+  "operations": [
+    {
+      "id": "status_snapshot",
+      "kind": "query",
+      "scope": "example.read",
+      "consequential": false,
+      "precondition": "none",
+      "idempotency": "read-only",
+      "surfaces": {
+        "tauri": "product.status",
+        "localCli": "product status",
+        "remoteCli": "product status",
+        "browserCompanion": "product.status"
+      },
+      "resultSchema": "product-state-v1"
+    },
+    {
+      "id": "set_level",
+      "kind": "action",
+      "scope": "example.control",
+      "consequential": true,
+      "precondition": "expected-authority-revision",
+      "idempotency": "command-id-and-fingerprint",
+      "surfaces": {
+        "tauri": "product.set_level",
+        "localCli": "product set-level",
+        "remoteCli": "product set-level",
+        "browserCompanion": "product.set_level"
+      },
+      "requestSchema": "set-level-v1",
+      "resultSchema": "product-state-v1"
+    },
+    {
+      "id": "activate",
+      "kind": "action",
+      "scope": "example.control",
+      "consequential": true,
+      "precondition": "expected-authority-revision",
+      "idempotency": "command-id-and-fingerprint",
+      "surfaces": {
+        "tauri": "product.set_active(true)",
+        "localCli": "product set-active --active true",
+        "remoteCli": "product set-active --active true",
+        "browserCompanion": "product.activate"
+      },
+      "requestSchema": "empty-v1",
+      "resultSchema": "product-state-v1"
+    },
+    {
+      "id": "deactivate",
+      "kind": "action",
+      "scope": "example.control",
+      "consequential": true,
+      "precondition": "expected-authority-revision",
+      "idempotency": "command-id-and-fingerprint",
+      "surfaces": {
+        "tauri": "product.set_active(false)",
+        "localCli": "product set-active --active false",
+        "remoteCli": "product set-active --active false",
+        "browserCompanion": "product.deactivate"
+      },
+      "requestSchema": "empty-v1",
+      "resultSchema": "product-state-v1"
+    },
+    {
+      "id": "state_updates",
+      "kind": "subscription",
+      "scope": "example.read",
+      "consequential": false,
+      "precondition": "authority-generation-and-last-revision",
+      "idempotency": "connection-epoch-and-sequence",
+      "surfaces": {
+        "tauri": "product.state_updates",
+        "localCli": "product watch --output json-lines",
+        "remoteCli": "product watch --output json-lines",
+        "browserCompanion": "product.state_updates"
+      },
+      "resultSchema": "product-state-event-v1"
+    },
+    {
+      "id": "content_upload",
+      "kind": "transfer",
+      "scope": "example.upload",
+      "consequential": true,
+      "precondition": "transfer-id-offset-and-object-version",
+      "idempotency": "transfer-id-offset-and-digest",
+      "surfaces": {
+        "tauri": "content.upload",
+        "localCli": "content upload --file FILE",
+        "remoteCli": "content upload --file FILE",
+        "browserCompanion": "content.upload"
+      },
+      "bulkProfile": "reliable-ordered-binary",
+      "phases": ["declare", "stream", "resume", "finalize", "cancel"],
+      "requestSchema": "transfer-manifest-v1",
+      "resultSchema": "content-object-v1"
+    }
+  ],
+  "state": {
+    "schema": {
+      "id": "product-state-v1",
+      "closed": true
+    },
+    "containsNativePaths": false,
+    "snapshotRecovery": true
+  },
+  "authentication": {
+    "humanPassword": "opaque",
+    "highEntropyInvitation": "brsp-mutual-hmac",
+    "rememberedBrowser": {
+      "mode": "proof-of-possession-webcrypto",
+      "maximumTtlSeconds": 86400,
+      "revocable": true
+    }
+  },
+  "transports": {
+    "universal": "webrtc",
+    "optionalFastPath": "none",
+    "controlLane": "reliable-ordered",
+    "stateLane": "latest-unordered-zero-retry",
+    "bulkLane": "reliable-ordered-binary",
+    "routeReporting": "direct-relay-unknown"
+  },
+  "limits": {
+    "controlMessageBytes": 16384,
+    "stateMessageBytes": 8192,
+    "bulkFrameBytes": 65536,
+    "bulkBufferedBytes": 1048576,
+    "commandTimeoutMs": 10000
+  },
+  "privacy": {
+    "staticHostContainsUserData": false,
+    "nativePathsOnWire": false,
+    "secretsInUrls": false,
+    "remoteDiagnosticsOptIn": true
+  }
+}

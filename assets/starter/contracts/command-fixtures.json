@@ -1,0 +1,33 @@
+{
+  "validCommand": {
+    "authorityGeneration": "authority_demo_01",
+    "principalId": "principal_demo_01",
+    "grantId": "grant_demo_01",
+    "commandId": "command_demo_01",
+    "scope": "example.control",
+    "expectedRevision": 0,
+    "action": {
+      "kind": "set_level",
+      "value": 37
+    }
+  },
+  "validSnapshot": {
+    "authorityGeneration": "authority_demo_01",
+    "revision": 1,
+    "state": {
+      "active": false,
+      "level": 37
+    }
+  },
+  "validBinaryMetadata": {
+    "type": "example.bulk.chunk.v1",
+    "authorityGeneration": "authority_demo_01",
+    "grantId": "grant_demo_01",
+    "principalId": "principal_demo_01",
+    "sequence": 41,
+    "transferId": "transfer_demo_01",
+    "fileId": "file_demo_01",
+    "offset": 0,
+    "payloadLength": 4
+  }
+}

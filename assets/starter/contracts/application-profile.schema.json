@@ -1,0 +1,278 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/remote-application-profile-v1.json",
+  "title": "Remote application profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol",
+    "version",
+    "authority",
+    "adapters",
+    "remoteControl",
+    "availability",
+    "roles",
+    "scopes",
+    "schemas",
+    "operations",
+    "state",
+    "authentication",
+    "transports",
+    "limits",
+    "privacy"
+  ],
+  "properties": {
+    "protocol": { "$ref": "#/$defs/token" },
+    "version": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "revision", "commandDedupe"],
+      "properties": {
+        "owner": { "const": "rust" },
+        "revision": { "const": "monotonic-per-authority-generation" },
+        "commandDedupe": { "const": "generation-principal-command-id-plus-fingerprint" }
+      }
+    },
+    "adapters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tauri", "localCli", "remoteCli", "browserCompanion"],
+      "properties": {
+        "tauri": { "const": "typed-product-ipc" },
+        "localCli": { "const": "authenticated-local-ipc-same-authority" },
+        "remoteCli": { "const": "same-public-protocol-as-browser" },
+        "browserCompanion": { "const": "static-untrusted-client" }
+      }
+    },
+    "remoteControl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy",
+        "inventorySource",
+        "productOperationInventoryComplete",
+        "localOnlyExceptions"
+      ],
+      "properties": {
+        "policy": { "const": "full-semantic-parity" },
+        "inventorySource": { "const": "rust-domain-registry" },
+        "productOperationInventoryComplete": { "const": true },
+        "localOnlyExceptions": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operationId",
+              "kind",
+              "scope",
+              "consequential",
+              "category",
+              "reason",
+              "surfaces"
+            ],
+            "properties": {
+              "operationId": { "$ref": "#/$defs/token" },
+              "kind": { "enum": ["action", "query", "subscription", "transfer"] },
+              "scope": { "$ref": "#/$defs/token" },
+              "consequential": { "type": "boolean" },
+              "category": {
+                "enum": ["trust", "consent", "physical-presence", "os-permission", "safety"]
+              },
+              "reason": { "type": "string", "minLength": 20, "maxLength": 512 },
+              "surfaces": { "$ref": "#/$defs/localSurfaceBindings" }
+            }
+          }
+        }
+      }
+    },
+    "availability": {
+      "enum": ["manual-session", "app-lifetime-beacon", "supervised-login-service"]
+    },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/token" }
+    },
+    "scopes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/token" }
+    },
+    "schemas": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 128,
+      "propertyNames": { "$ref": "#/$defs/token" },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+\\.json(?:#/.+)?$"
+      }
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": { "$ref": "#/$defs/operation" }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "containsNativePaths", "snapshotRecovery"],
+      "properties": {
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "closed"],
+          "properties": {
+            "id": { "$ref": "#/$defs/token" },
+            "closed": { "const": true }
+          }
+        },
+        "containsNativePaths": { "const": false },
+        "snapshotRecovery": { "const": true }
+      }
+    },
+    "authentication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["humanPassword", "highEntropyInvitation", "rememberedBrowser"],
+      "properties": {
+        "humanPassword": { "enum": ["opaque", "spake2-plus", "spake2", "disabled"] },
+        "highEntropyInvitation": { "enum": ["brsp-mutual-hmac", "disabled"] },
+        "rememberedBrowser": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "maximumTtlSeconds", "revocable"],
+          "properties": {
+            "mode": {
+              "enum": ["proof-of-possession-webcrypto", "opaque-bearer-fallback", "disabled"]
+            },
+            "maximumTtlSeconds": { "type": "integer", "minimum": 60, "maximum": 86400 },
+            "revocable": { "const": true }
+          }
+        }
+      }
+    },
+    "transports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["universal", "optionalFastPath", "controlLane", "stateLane", "bulkLane", "routeReporting"],
+      "properties": {
+        "universal": { "enum": ["webrtc", "wss"] },
+        "optionalFastPath": { "enum": ["webtransport", "none"] },
+        "controlLane": { "const": "reliable-ordered" },
+        "stateLane": { "enum": ["latest-unordered-zero-retry", "reliable-coalesced"] },
+        "bulkLane": { "const": "reliable-ordered-binary" },
+        "routeReporting": { "const": "direct-relay-unknown" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["controlMessageBytes", "stateMessageBytes", "bulkFrameBytes", "bulkBufferedBytes", "commandTimeoutMs"],
+      "properties": {
+        "controlMessageBytes": { "type": "integer", "minimum": 256, "maximum": 1048576 },
+        "stateMessageBytes": { "type": "integer", "minimum": 256, "maximum": 4194304 },
+        "bulkFrameBytes": { "type": "integer", "minimum": 1024, "maximum": 1048576 },
+        "bulkBufferedBytes": { "type": "integer", "minimum": 65536, "maximum": 67108864 },
+        "commandTimeoutMs": { "type": "integer", "minimum": 100, "maximum": 120000 }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["staticHostContainsUserData", "nativePathsOnWire", "secretsInUrls", "remoteDiagnosticsOptIn"],
+      "properties": {
+        "staticHostContainsUserData": { "const": false },
+        "nativePathsOnWire": { "const": false },
+        "secretsInUrls": { "const": false },
+        "remoteDiagnosticsOptIn": { "const": true }
+      }
+    }
+  },
+  "$defs": {
+    "token": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "binding": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "surfaceBindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tauri", "localCli", "remoteCli", "browserCompanion"],
+      "properties": {
+        "tauri": { "$ref": "#/$defs/binding" },
+        "localCli": { "$ref": "#/$defs/binding" },
+        "remoteCli": { "$ref": "#/$defs/binding" },
+        "browserCompanion": { "$ref": "#/$defs/binding" }
+      }
+    },
+    "localSurfaceBindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "tauri": { "$ref": "#/$defs/binding" },
+        "localCli": { "$ref": "#/$defs/binding" }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "scope",
+        "consequential",
+        "precondition",
+        "idempotency",
+        "surfaces",
+        "resultSchema"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/token" },
+        "kind": { "enum": ["action", "query", "subscription", "transfer"] },
+        "scope": { "$ref": "#/$defs/token" },
+        "consequential": { "type": "boolean" },
+        "precondition": { "$ref": "#/$defs/token" },
+        "idempotency": { "$ref": "#/$defs/token" },
+        "surfaces": { "$ref": "#/$defs/surfaceBindings" },
+        "requestSchema": { "$ref": "#/$defs/token" },
+        "resultSchema": { "$ref": "#/$defs/token" },
+        "bulkProfile": { "$ref": "#/$defs/token" },
+        "phases": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/token" }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "action" } }, "required": ["kind"] },
+          "then": { "required": ["requestSchema"] }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "transfer" } }, "required": ["kind"] },
+          "then": { "required": ["bulkProfile", "phases", "requestSchema"] }
+        }
+      ]
+    }
+  }
+}

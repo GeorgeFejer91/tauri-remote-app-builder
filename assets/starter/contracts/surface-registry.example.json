@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "source": "generated-from-typed-adapter-registries",
+  "registries": {
+    "tauri": [
+      "activate",
+      "content_upload",
+      "deactivate",
+      "set_level",
+      "state_updates",
+      "status_snapshot"
+    ],
+    "localCli": [
+      "activate",
+      "content_upload",
+      "deactivate",
+      "set_level",
+      "state_updates",
+      "status_snapshot"
+    ],
+    "remoteCli": [
+      "activate",
+      "content_upload",
+      "deactivate",
+      "set_level",
+      "state_updates",
+      "status_snapshot"
+    ],
+    "browserCompanion": [
+      "activate",
+      "content_upload",
+      "deactivate",
+      "set_level",
+      "state_updates",
+      "status_snapshot"
+    ]
+  }
+}
