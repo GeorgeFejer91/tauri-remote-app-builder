@@ -1,0 +1,13 @@
+{
+  "type": "example.device.challenge.v1",
+  "protocol": "example.remote",
+  "targetId": "target_demo_01",
+  "authorityGeneration": "authority_demo_01",
+  "authenticationGeneration": "auth_generation_01",
+  "deviceId": "device_demo_01",
+  "nonce": "replace-with-at-least-192-bits-of-random-base64url",
+  "requestedRole": "controller",
+  "requestedScopes": ["example.read", "example.control"],
+  "issuedAtMs": 1788282000000,
+  "expiresAtMs": 1788282030000
+}

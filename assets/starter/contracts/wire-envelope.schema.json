@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/remote-wire-envelope-v1.json",
+  "title": "Remote control wire envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol", "version", "type", "authorityGeneration", "senderId", "senderEpoch", "sequence", "body"],
+  "properties": {
+    "protocol": { "$ref": "#/$defs/token" },
+    "version": { "const": 1 },
+    "type": {
+      "enum": ["hello", "ready", "command", "applied", "rejected", "snapshot_request", "snapshot", "state", "revoked", "bye", "error"]
+    },
+    "authorityGeneration": { "$ref": "#/$defs/id" },
+    "senderId": { "$ref": "#/$defs/id" },
+    "senderEpoch": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+    "sequence": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+    "body": { "type": "object", "maxProperties": 128 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "command" } }, "required": ["type"] },
+      "then": {
+        "properties": {
+          "body": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["commandId", "grantId", "principalId", "scope", "expectedRevision", "action"],
+            "properties": {
+              "commandId": { "$ref": "#/$defs/id" },
+              "grantId": { "$ref": "#/$defs/id" },
+              "principalId": { "$ref": "#/$defs/id" },
+              "scope": { "$ref": "#/$defs/token" },
+              "expectedRevision": { "type": ["integer", "null"], "minimum": 0 },
+              "action": { "$ref": "#/$defs/productAction" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "enum": ["applied", "rejected"] } }, "required": ["type"] },
+      "then": {
+        "properties": {
+          "body": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["commandId", "ok", "revision", "result", "error"],
+            "properties": {
+              "commandId": { "$ref": "#/$defs/id" },
+              "ok": { "type": "boolean" },
+              "revision": { "type": "integer", "minimum": 0 },
+              "result": {
+                "oneOf": [
+                  { "$ref": "#/$defs/productState" },
+                  { "type": "null" }
+                ]
+              },
+              "error": { "type": ["string", "null"], "maxLength": 96 }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "token": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "emptyObject": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "setLevelAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "value"],
+      "properties": {
+        "kind": { "const": "set_level" },
+        "value": { "type": "integer", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "activateAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": { "kind": { "const": "activate" } }
+    },
+    "deactivateAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": { "kind": { "const": "deactivate" } }
+    },
+    "productAction": {
+      "oneOf": [
+        { "$ref": "#/$defs/setLevelAction" },
+        { "$ref": "#/$defs/activateAction" },
+        { "$ref": "#/$defs/deactivateAction" }
+      ]
+    },
+    "productState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "level"],
+      "properties": {
+        "active": { "type": "boolean" },
+        "level": { "type": "integer", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "contentObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["objectId", "byteLength", "sha256"],
+      "properties": {
+        "objectId": { "$ref": "#/$defs/id" },
+        "byteLength": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  }
+}

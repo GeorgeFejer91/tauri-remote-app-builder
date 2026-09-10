@@ -1,0 +1,23 @@
+[package]
+name = "tauri-remote-app-cli-starter"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74"
+publish = false
+license = "MIT"
+description = "Typed CLI adapter starter for a running Tauri Rust authority"
+
+[lib]
+name = "tauri_remote_app_cli"
+path = "src/lib.rs"
+
+[[bin]]
+name = "appctl"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dev-dependencies]
+remote-control-core-starter = { path = "../rust" }

@@ -1,0 +1,20 @@
+{
+  "protocol": "example.remote",
+  "version": 1,
+  "type": "command",
+  "authorityGeneration": "authority_demo_01",
+  "senderId": "browser_demo_01",
+  "senderEpoch": 3,
+  "sequence": 41,
+  "body": {
+    "commandId": "command_demo_01",
+    "grantId": "grant_demo_01",
+    "principalId": "principal_demo_01",
+    "scope": "example.control",
+    "expectedRevision": 0,
+    "action": {
+      "kind": "set_level",
+      "value": 37
+    }
+  }
+}
