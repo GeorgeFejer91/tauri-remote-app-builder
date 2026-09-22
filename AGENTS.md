@@ -1,5 +1,7 @@
 # Repository Instructions
 
+> Mandatory first read: [for-ai/README.md](./for-ai/README.md). It is the YAGNI control-plane router; then follow the project-specific rules below.
+
 Read `SKILL.md` and every reference routed for the requested change before editing.
 
 Preserve the central boundary: one Rust authority, a closed typed action set, Tauri/UI/CLI/remote adapters over the same service, explicit authentication and authorization, bounded resources, and evidence-based claims. Remote-ready does not authorize opening listeners, changing firewall/autostart settings, creating public services, or deploying.
