@@ -1,0 +1,50 @@
+name: Check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: assets/starter/browser/package-lock.json
+      - run: rustup toolchain install 1.74.0 --profile minimal
+      - run: rustup component add rustfmt clippy --toolchain 1.74.0
+      - name: Run Codex root quick validation when available
+        shell: bash
+        run: |
+          quick_validator="$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py"
+          if [[ -f "$quick_validator" ]] && python3 -c 'import yaml' >/dev/null 2>&1; then
+            python3 "$quick_validator" .
+          else
+            echo "Codex quick validator is unavailable; the root repository validator runs next."
+          fi
+      - name: Validate the combined skill root
+        run: python3 scripts/check_repository.py
+      - name: Run Python repository and scaffold tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Check Rust authority starter formatting
+        run: cargo +1.74.0 fmt --all --manifest-path assets/starter/rust/Cargo.toml -- --check
+      - name: Lint Rust authority starter
+        run: cargo +1.74.0 clippy --locked --all-targets --all-features --manifest-path assets/starter/rust/Cargo.toml -- -D warnings
+      - name: Test Rust authority starter
+        run: cargo +1.74.0 test --locked --all-features --manifest-path assets/starter/rust/Cargo.toml
+      - name: Check typed CLI starter formatting
+        run: cargo +1.74.0 fmt --all --manifest-path assets/starter/cli/Cargo.toml -- --check
+      - name: Lint typed CLI starter
+        run: cargo +1.74.0 clippy --locked --all-targets --all-features --manifest-path assets/starter/cli/Cargo.toml -- -D warnings
+      - name: Test typed CLI starter
+        run: cargo +1.74.0 test --locked --all-features --manifest-path assets/starter/cli/Cargo.toml
+      - name: Install browser starter dependencies
+        run: npm --prefix assets/starter/browser ci --ignore-scripts
+      - name: Test browser companion starter
+        run: npm --prefix assets/starter/browser test

@@ -65,6 +65,9 @@ Then load only the material relevant to the current change.
 
 ### Remote Browser, CLI, and Data Planes
 
+For experiment runners with HTML remote viewers or recorder tab integration, read [experiment-remote-panels.md](references/experiment-remote-panels.md). Include a Remote Panel/1 descriptor, stable embeddable controller path, local link/QR export, and independent experiment authority.
+
+
 | Need | Read |
 |---|---|
 | Authority topology | [01-architecture-and-authority.md](references/01-architecture-and-authority.md) |
